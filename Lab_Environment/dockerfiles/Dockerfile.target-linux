@@ -1,0 +1,78 @@
+# Target Linux Machine Dockerfile
+# Ubuntu-based target for BadUSB payload testing
+
+FROM ubuntu:22.04
+
+LABEL maintainer="Security Training"
+LABEL description="BadUSB Target Machine (Linux)"
+
+# Avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Update and install packages
+RUN apt-get update && apt-get install -y \
+    # Desktop environment (minimal)
+    xfce4 \
+    xfce4-terminal \
+    # Core tools
+    curl \
+    wget \
+    vim \
+    nano \
+    # Network tools
+    net-tools \
+    iproute2 \
+    dnsutils \
+    netcat-openbsd \
+    # System monitoring
+    htop \
+    sysstat \
+    auditd \
+    # SSH
+    openssh-server \
+    # Logging
+    rsyslog \
+    # Browser
+    firefox \
+    # Misc
+    sudo \
+    cron \
+    at \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create target user
+RUN useradd -m -s /bin/bash victim \
+    && echo 'victim:password123' | chpasswd \
+    && usermod -aG sudo victim
+
+# Create sensitive files for exfil testing
+RUN mkdir -p /home/victim/.ssh \
+    && echo "ssh-rsa AAAAB3Nz...FAKE_KEY... victim@target" > /home/victim/.ssh/id_rsa.pub \
+    && echo "-----BEGIN PRIVATE KEY-----\nFAKE_PRIVATE_KEY_FOR_TESTING\n-----END PRIVATE KEY-----" > /home/victim/.ssh/id_rsa \
+    && chmod 600 /home/victim/.ssh/id_rsa \
+    && chown -R victim:victim /home/victim/.ssh
+
+# Create fake sensitive data
+RUN mkdir -p /home/victim/Documents \
+    && echo "Company Confidential\nProject: Secret Project\nBudget: \$1,000,000" > /home/victim/Documents/confidential.txt \
+    && echo "username=admin\npassword=SuperSecret123!" > /home/victim/.credentials \
+    && chown -R victim:victim /home/victim
+
+# Configure SSH
+RUN mkdir /var/run/sshd \
+    && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config \
+    && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+# Enable audit logging
+RUN echo '-w /tmp -p wa -k temp_activity' >> /etc/audit/rules.d/audit.rules \
+    && echo '-w /home -p wa -k home_activity' >> /etc/audit/rules.d/audit.rules
+
+# Create evidence collection directory
+RUN mkdir -p /tmp/evidence && chmod 777 /tmp/evidence
+
+# Set working directory
+WORKDIR /home/victim
+
+# Start services
+CMD service ssh start && service rsyslog start && service auditd start && tail -f /dev/null

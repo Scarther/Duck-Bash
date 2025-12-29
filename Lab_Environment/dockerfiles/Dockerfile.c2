@@ -1,0 +1,26 @@
+# C2 Simulation Server Dockerfile
+# Simple beacon receiver for testing
+
+FROM python:3.11-slim
+
+LABEL maintainer="Security Training"
+LABEL description="C2 Simulation Server"
+
+# Install dependencies
+RUN pip install flask requests
+
+# Create app directory
+WORKDIR /app
+
+# Copy C2 server script
+COPY scripts/c2_server.py /app/
+
+# Create loot directory
+RUN mkdir -p /app/loot
+
+# Expose ports
+EXPOSE 8888
+EXPOSE 53/udp
+
+# Run server
+CMD ["python", "c2_server.py"]

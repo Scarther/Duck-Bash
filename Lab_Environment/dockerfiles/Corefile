@@ -1,0 +1,25 @@
+# CoreDNS Configuration for Lab
+# Logs all DNS queries for analysis
+
+. {
+    # Log all queries
+    log
+
+    # Forward to upstream DNS
+    forward . 8.8.8.8 8.8.4.4
+
+    # Cache responses
+    cache 30
+
+    # Respond to health checks
+    health
+
+    # Enable debugging
+    debug
+}
+
+# Custom zone for exfiltration testing
+exfil.lab {
+    log
+    file /etc/coredns/exfil.db
+}

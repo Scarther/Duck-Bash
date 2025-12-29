@@ -1,0 +1,77 @@
+# Attacker Machine Dockerfile
+# Kali-based attack platform for BadUSB training
+
+FROM kalilinux/kali-rolling:latest
+
+LABEL maintainer="Security Training"
+LABEL description="BadUSB Attack Platform"
+
+# Avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Update and install tools
+RUN apt-get update && apt-get install -y \
+    # Core tools
+    git \
+    curl \
+    wget \
+    vim \
+    nano \
+    tmux \
+    htop \
+    # Network tools
+    nmap \
+    netcat-openbsd \
+    tcpdump \
+    wireshark-common \
+    tshark \
+    dnsutils \
+    net-tools \
+    # Python
+    python3 \
+    python3-pip \
+    python3-venv \
+    # Web tools
+    apache2 \
+    php \
+    # Crypto/Hash tools
+    hashcat \
+    john \
+    # SSH
+    openssh-server \
+    # Misc
+    jq \
+    xxd \
+    binwalk \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python packages
+RUN pip3 install --break-system-packages \
+    flask \
+    requests \
+    scapy \
+    pycryptodome \
+    impacket
+
+# Create directory structure
+RUN mkdir -p /root/{payloads,tools,loot,scripts}
+
+# Create simple C2 listener script
+COPY scripts/c2_listener.py /root/scripts/
+COPY scripts/exfil_server.py /root/scripts/
+
+# Create HTTP payload server script
+RUN echo '#!/bin/bash\ncd /root/payloads && python3 -m http.server 8080' > /root/scripts/start_http.sh \
+    && chmod +x /root/scripts/start_http.sh
+
+# Configure SSH
+RUN mkdir /var/run/sshd \
+    && echo 'root:toor' | chpasswd \
+    && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+# Set working directory
+WORKDIR /root
+
+# Start SSH on container start
+CMD ["/usr/sbin/sshd", "-D"]
