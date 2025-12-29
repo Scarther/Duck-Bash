@@ -1,0 +1,57 @@
+REM ################################################
+REM # Payload: FZ-B04 - System Information
+REM # Target:  Windows 10/11
+REM # Author:  Ducky_Bash Training Repository
+REM # Version: 1.0
+REM #
+REM # Description:
+REM # Opens CMD and displays basic system information.
+REM # Non-invasive reconnaissance payload.
+REM #
+REM # MITRE ATT&CK: T1082 (System Information Discovery)
+REM # Documentation: Chapter_01/02_Basic_Scripts/FZ-B04_System_Info.md
+REM ################################################
+
+REM Wait for USB enumeration
+DELAY 2000
+
+REM Open Run dialog
+GUI r
+DELAY 500
+
+REM Open Command Prompt
+STRING cmd
+ENTER
+DELAY 1000
+
+REM Display system information
+STRING echo ===== SYSTEM INFORMATION =====
+ENTER
+DELAY 200
+
+STRING hostname
+ENTER
+DELAY 200
+
+STRING whoami
+ENTER
+DELAY 200
+
+STRING echo.
+ENTER
+STRING echo ===== NETWORK INFO =====
+ENTER
+DELAY 200
+
+STRING ipconfig
+ENTER
+DELAY 500
+
+STRING echo.
+ENTER
+STRING echo ===== OS VERSION =====
+ENTER
+DELAY 200
+
+STRING ver
+ENTER
