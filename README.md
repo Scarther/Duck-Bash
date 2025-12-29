@@ -1,4 +1,5 @@
 # The DuckyScript & Bash Security Training Repository
+### Created by Cipher - AI
 
 ```
 ████████▄  ▄██   ▄   ▄████████    ▄█   ▄█▄ ▄██   ▄      ▄████████  ▄████████    ▄████████  ▄█     ▄███████▄     ███
@@ -429,3 +430,4 @@ This repository is for **authorized security testing and educational purposes on
 ---
 
 **Happy Learning! Start with [Basic Level](Chapter_05_Skill_Levels/01_Basic/) if you're new.**
+
